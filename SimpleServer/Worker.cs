@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace SimpleServer
 {
     public class Worker
     {
-        public Action<Worker, string> Finished;
+        public Action<Worker, Job> Finished;
 
         public Task<string> Task { get; protected set; }
         public bool IsFinished { get; protected set; } = false;
 
         private LoginService _loginService;
         private TaskFactory _taskFactory;
+        private IPEndPoint _endPoint;
 
         public Worker(LoginService loginService, TaskFactory factory)
         {
@@ -19,9 +21,10 @@ namespace SimpleServer
             _loginService = loginService;
         }
 
-        public void Start(string message)
+        public void Start(Job job)
         {
-            Task = _taskFactory.StartNew(() => Calculate(message));
+            _endPoint = job.EndPoint;
+            Task = _taskFactory.StartNew(() => Calculate(job.Message));
             Task.ContinueWith(SetFinished);
         }
 
@@ -29,7 +32,7 @@ namespace SimpleServer
         {
             IsFinished = true;
             string result = await task;
-            Finished?.Invoke(this, result);
+            Finished?.Invoke(this, new Job(result, _endPoint));
         }
 
         private string Calculate(string data)
