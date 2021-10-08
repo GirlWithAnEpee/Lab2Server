@@ -1,45 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SimpleServer
 {
     public class Scheduler
     {
-        public event Action<string> MessageResolved;
-
         private WorkerFactory _factory;
-        private Queue<string> Messages;
+        private Queue<Job> Messages;
         private Encoding _encoding;
         private bool _acceptingMessages;
 
-        public Scheduler(Encoding encoding, int maxThreads, LoginService loginService)
+        public Scheduler(Encoding encoding, WorkerFactory factory)
         {
             _encoding = encoding;
-            _factory = new WorkerFactory(maxThreads, loginService, this);
+            _factory = factory;
         }
 
         public void Start()
         {
             _acceptingMessages = true;
-            while (_acceptingMessages)
+            Task.Factory.StartNew(ResolveMessages);
+        }
+
+        private void ResolveMessages()
+        {
+            while (_acceptingMessages || Messages.Count > 0)
             {
                 if (Messages.Count > 0 && _factory.Available > 0)
                 {
-                    string message = Messages.Dequeue();
+                    Job message = Messages.Dequeue();
                     _factory.StartJob(message);
+                }
+                else
+                {
+                    Thread.Sleep(50);
                 }
             }
         }
 
-        public void Enqueue(byte[] data)
+        public void Enqueue(byte[] data, IPEndPoint endPoint)
         {
             if (!_acceptingMessages)
                 return;
 
-
             string message = _encoding.GetString(data);
-            Messages.Enqueue(message);
+            Messages.Enqueue(new Job(message, endPoint));
         }
 
         public void Stop()
