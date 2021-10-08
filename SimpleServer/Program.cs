@@ -19,6 +19,7 @@ namespace SimpleServer
         static byte[] data;
         static List<string> logins = new List<string>();
         private static Scheduler _scheduler;
+        private static bool isStopped = false;
 
 
         static void Main(string[] args)
@@ -33,11 +34,12 @@ namespace SimpleServer
 
             factory.StopSignal += Stop;
             factory.MessageResolved += SendResponse;
+            _scheduler.Start();
 
             Console.WriteLine("Сервер запущен. Ожидание подключений...");
             try
             {
-                while (true)
+                while (!isStopped)
                 {
                     data = listener.Receive(ref endPoint);
                     _scheduler.Enqueue(data, endPoint);
@@ -70,6 +72,7 @@ namespace SimpleServer
 
         private static void Stop()
         {
+            isStopped = true;
             listener.Close();
             _scheduler.Stop();
         }
