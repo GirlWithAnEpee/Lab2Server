@@ -20,10 +20,35 @@ namespace SimpleServer
             _factory = factory;
         }
 
+        /// <summary>
+        /// Начинает в фоновом потоке забирать задачи из очереди и отдавать на выполнение
+        /// </summary>
         public void Start()
         {
             _acceptingMessages = true;
             Task.Factory.StartNew(ResolveMessages);
+        }
+
+        /// <summary>
+        /// Добавляет задачу в очередь обработки
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="endPoint"></param>
+        public void Enqueue(byte[] data, IPEndPoint endPoint)
+        {
+            if (!_acceptingMessages)
+                return;
+
+            string message = _encoding.GetString(data);
+            Messages.Enqueue(new Job(message, endPoint));
+        }
+
+        /// <summary>
+        /// Останавливает приём новых задач и выполняет оставшиеся
+        /// </summary>
+        public void Stop()
+        {
+            _acceptingMessages = false;
         }
 
         private void ResolveMessages()
@@ -40,20 +65,6 @@ namespace SimpleServer
                     Thread.Sleep(50);
                 }
             }
-        }
-
-        public void Enqueue(byte[] data, IPEndPoint endPoint)
-        {
-            if (!_acceptingMessages)
-                return;
-
-            string message = _encoding.GetString(data);
-            Messages.Enqueue(new Job(message, endPoint));
-        }
-
-        public void Stop()
-        {
-            _acceptingMessages = false;
         }
     }
 }
