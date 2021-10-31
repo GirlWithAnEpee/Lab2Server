@@ -11,11 +11,13 @@ namespace SimpleServer
 {
     class Program
     {
-        private const int listenPort = 1010;
-        //private const int sendPort = 8008;
+        private const int listenPort = 8080;
+        private const int sendPort = 8888;
+        private const int listenPortBC = 1010;
+        private const int sendPortBC = 1111;
+        static DiscoveryClient client;
         static IPEndPoint endPoint;
         static UdpClient listener;
-        static Thread thread;
         static byte[] data;
         static List<string> logins = new List<string>();
         private static Scheduler _scheduler;
@@ -25,7 +27,9 @@ namespace SimpleServer
         static void Main(string[] args)
         {
             listener = new UdpClient(listenPort);
-            endPoint = new IPEndPoint(IPAddress.Any, listenPort);
+            endPoint = new IPEndPoint(IPAddress.Any, sendPort);
+            client = new DiscoveryClient(Guid.NewGuid().ToString(), listenPortBC, sendPortBC);//1010 и 1111
+            client.StartDiscovery(revealSelf: true, discover: false);
 
             ReadLogins("logins.txt");
             LoginService loginService = new LoginService(logins);
