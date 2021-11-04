@@ -77,6 +77,7 @@ namespace SimpleServer
         private static void Stop()
         {
             isStopped = true;
+            Console.WriteLine("Сервер завершает работу...");
             listener.Close();
             _scheduler.Stop();
         }

@@ -23,7 +23,7 @@ namespace SimpleServer
             _loginService = loginService;
             MaxThreads = maxThreads;
             Workers = new List<Worker>(maxThreads);
-
+            Available = MaxThreads;
             _ctx = SynchronizationContext.Current ?? new SynchronizationContext();
         }
 
