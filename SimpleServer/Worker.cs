@@ -53,7 +53,7 @@ namespace SimpleServer
 
             if (int.TryParse(parts[2], out ch1))
             {
-                if (parts.Length == 3)
+                if (parts[3]=="")
                     return CalculateFactorial(ch1);
 
                 if (parts.Length > 3 && int.TryParse(parts[3], out ch2))
