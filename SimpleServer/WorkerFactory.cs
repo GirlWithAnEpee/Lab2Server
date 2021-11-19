@@ -28,7 +28,7 @@ namespace SimpleServer
         }
 
         /// <summary>
-        /// Пытается отдать задачу на выполнению работникам
+        /// Пытается отдать задачу на выполнение работникам
         /// </summary>
         /// <param name="job"></param>
         public void StartJob(Job job)
